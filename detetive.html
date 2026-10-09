@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10132B">
+<title>Detetive da IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#10132B; --navy2:#1D2150; --navy3:#2A2F6B;
+    --lime:#C8F25A; --coral:#FF6B5E; --texto:#F4F2EC; --suave:#B9BCD6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--navy);color:var(--texto);
+       display:flex;justify-content:center;font-size:19px;line-height:1.45}
+  button{font:inherit;color:inherit;border:0;cursor:pointer}
+  :focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+  .app{width:100%;max-width:520px;min-height:100%;padding:20px 18px 28px;display:flex;flex-direction:column;gap:18px}
+  .oculto{display:none!important}
+
+  /* topo */
+  .topo{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .marca{font-weight:700;font-size:18px;letter-spacing:.3px}
+  .marca span{color:var(--lime)}
+  .placar{background:var(--navy2);border-radius:999px;padding:6px 14px;font-weight:700;font-size:17px}
+  .placar b{color:var(--lime)}
+  .trilha{height:8px;background:var(--navy2);border-radius:8px;overflow:hidden}
+  .trilha i{display:block;height:100%;width:0;background:var(--lime);transition:width .4s ease}
+
+  /* início */
+  .inicio{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;text-align:left}
+  .lupa{font-size:84px;line-height:1}
+  .inicio h1{font-size:44px;line-height:1.05}
+  .inicio h1 span{color:var(--lime)}
+  .inicio p{color:var(--suave);font-size:20px}
+  .regras{display:grid;gap:10px}
+  .regra{display:flex;gap:12px;align-items:center;background:var(--navy2);border-radius:18px;padding:14px 16px;font-weight:500}
+  .regra em{font-style:normal;font-size:26px}
+
+  .btn{width:100%;min-height:62px;border-radius:20px;font-weight:700;font-size:21px;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s}
+  .btn:active{transform:scale(.97)}
+  .btn-lima{background:var(--lime);color:var(--navy)}
+  .btn-linha{background:transparent;border:2px solid var(--navy3);color:var(--texto)}
+
+  /* rodada */
+  .rodada{flex:1;display:flex;flex-direction:column;gap:18px}
+  .etiqueta{font-size:15px;font-weight:700;color:var(--suave);letter-spacing:.6px}
+  .bolha{position:relative;background:var(--navy2);border-radius:24px 24px 24px 6px;padding:20px 20px 22px;
+         border:2px solid var(--navy3);animation:entra .35s ease both}
+  .bolha .quem{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:var(--suave);margin-bottom:10px}
+  .bolha .quem i{font-style:normal;width:34px;height:34px;border-radius:50%;background:var(--navy3);display:grid;place-items:center;font-size:18px}
+  .bolha p{font-size:24px;font-weight:500;line-height:1.35}
+  .pergunta{font-weight:700;font-size:21px}
+  .escolhas{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .escolha{min-height:96px;border-radius:22px;font-weight:700;font-size:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:transform .12s}
+  .escolha:active{transform:scale(.96)}
+  .escolha em{font-style:normal;font-size:34px;line-height:1}
+  .confia{background:#1F5C3A;color:#EFFFF4}
+  .desconfia{background:#7A2620;color:#FFF1EF}
+  .escolha[disabled]{opacity:.45}
+  .escolha.marcada{opacity:1;outline:4px solid var(--texto);outline-offset:2px}
+
+  /* resposta */
+  .veredito{border-radius:22px;padding:18px 18px 20px;animation:entra .35s ease both}
+  .veredito.certo{background:var(--lime);color:var(--navy)}
+  .veredito.errado{background:var(--coral);color:var(--navy)}
+  .veredito h3{font-size:24px;line-height:1.2;margin-bottom:8px}
+  .veredito p{font-size:19px;font-weight:500}
+  .veredito .dica{margin-top:10px;font-weight:700;font-size:17px}
+
+  /* fim */
+  .fim{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px}
+  .medalha{font-size:92px;line-height:1}
+  .fim h2{font-size:38px;line-height:1.1}
+  .fim h2 span{color:var(--lime)}
+  .nota{font-size:22px;color:var(--suave)}
+  .ouro{background:var(--navy2);border-radius:22px;padding:18px}
+  .ouro h3{font-size:18px;color:var(--lime);margin-bottom:12px;letter-spacing:.4px}
+  .passos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+  .passos div{background:var(--navy3);border-radius:16px;padding:12px 4px;font-weight:700;font-size:15px}
+  .passos em{display:block;font-style:normal;font-size:28px;margin-bottom:4px}
+
+  @keyframes entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+
+  <!-- INÍCIO -->
+  <section class="inicio" id="telaInicio">
+    <div class="lupa">🕵️</div>
+    <h1>Detetive da <span>IA</span></h1>
+    <p>A IA parece saber tudo. Mas às vezes ela erra, inventa ou está desatualizada. Você consegue perceber?</p>
+    <div class="regras">
+      <div class="regra"><em>💬</em>Leia a resposta da IA</div>
+      <div class="regra"><em>✅</em>Confia? Ou <b>&nbsp;🚨 desconfia?</b></div>
+      <div class="regra"><em>🏆</em>12 casos. Quantos você acerta?</div>
+    </div>
+    <button class="btn btn-lima" id="btnComecar">Começar a investigação</button>
+  </section>
+
+  <!-- JOGO -->
+  <section class="rodada oculto" id="telaJogo">
+    <div class="topo">
+      <div class="marca">🕵️ Detetive da <span>IA</span></div>
+      <div class="placar">Acertos: <b id="acertos">0</b></div>
+    </div>
+    <div class="trilha"><i id="barra"></i></div>
+    <div class="etiqueta" id="numCaso">CASO 1 DE 12</div>
+    <div class="bolha" id="bolha">
+      <div class="quem"><i>🤖</i>Resposta da IA</div>
+      <p id="frase"></p>
+    </div>
+    <div class="pergunta">Você confia nessa resposta?</div>
+    <div class="escolhas">
+      <button class="escolha confia" id="btnConfia"><em>✅</em>Confio</button>
+      <button class="escolha desconfia" id="btnDesconfia"><em>🚨</em>Desconfio</button>
+    </div>
+    <div class="veredito oculto" id="veredito">
+      <h3 id="vTitulo"></h3>
+      <p id="vTexto"></p>
+      <p class="dica" id="vDica"></p>
+    </div>
+    <button class="btn btn-lima oculto" id="btnProximo">Próximo caso →</button>
+  </section>
+
+  <!-- FIM -->
+  <section class="fim oculto" id="telaFim">
+    <div class="medalha" id="medalha">🏅</div>
+    <h2 id="fimTitulo"></h2>
+    <p class="nota" id="fimNota"></p>
+    <div class="ouro">
+      <h3>REGRA DE OURO DO DETETIVE</h3>
+      <div class="passos">
+        <div><em>🧪</em>Teste</div>
+        <div><em>🤨</em>Desconfie</div>
+        <div><em>🔍</em>Confira</div>
+        <div><em>🔧</em>Corrija</div>
+      </div>
+    </div>
+    <button class="btn btn-lima" id="btnDeNovo">Jogar de novo</button>
+  </section>
+
+</main>
+
+<script>
+const CASOS = [
+  { frase: "A Independência do Brasil foi proclamada em 7 de setembro de 1822, por Dom Pedro I.",
+    confiavel: true,
+    explica: "Está certo! Essa informação aparece em qualquer livro de História.",
+    dica: "Mesmo quando a IA acerta, vale conferir em uma fonte confiável." },
+  { frase: "A capital do Brasil é o Rio de Janeiro.",
+    confiavel: false,
+    explica: "Errado! A capital é Brasília desde 1960. O Rio foi capital antes disso.",
+    dica: "A IA pode misturar informações antigas com atuais." },
+  { frase: "15% de 200 é 25.",
+    confiavel: false,
+    explica: "Conta errada! 10% de 200 é 20, e 5% é 10. Então 15% é 30.",
+    dica: "Faça a conta você mesmo. IA também erra matemática." },
+  { frase: "A água ferve a 100 °C ao nível do mar.",
+    confiavel: true,
+    explica: "Correto! Em lugares altos, como montanhas, ela ferve com temperatura um pouco menor.",
+    dica: "Detetive bom confia, mas sabe explicar por quê." },
+  { frase: "Um estudo da Universidade de Harvard de 2025 provou que dormir só 3 horas por noite faz a gente aprender mais.",
+    confiavel: false,
+    explica: "Esse estudo foi inventado! Dormir pouco atrapalha a memória e a atenção.",
+    dica: "Quando a IA inventa uma fonte, chamamos de alucinação. Procure se o estudo existe mesmo." },
+  { frase: "O Sol é uma estrela.",
+    confiavel: true,
+    explica: "Certo! O Sol é a estrela mais próxima da Terra.",
+    dica: "Informações simples também merecem atenção." },
+  { frase: "A cidade de Guarulhos fica no estado do Rio de Janeiro.",
+    confiavel: false,
+    explica: "Errado! Guarulhos fica no estado de São Paulo. É a nossa cidade!",
+    dica: "Você sabe coisas que a IA erra. Confie no que você conhece." },
+  { frase: "A Lei Áurea, que aboliu a escravidão no Brasil, foi assinada em 1888.",
+    confiavel: true,
+    explica: "Correto! Ela foi assinada em 13 de maio de 1888.",
+    dica: "Datas importantes: sempre confira em mais de uma fonte." },
+  { frase: "Em inglês, a palavra library significa livraria.",
+    confiavel: false,
+    explica: "Pegadinha! Library significa biblioteca. Livraria, em inglês, é bookstore.",
+    dica: "Cuidado com os falsos cognatos: palavras parecidas com significados diferentes." },
+  { frase: "O coração humano tem 4 cavidades: 2 átrios e 2 ventrículos.",
+    confiavel: true,
+    explica: "Certo! Essa é a estrutura do coração humano.",
+    dica: "Na dúvida, compare com o livro de Ciências." },
+  { frase: "3 × 7 = 24",
+    confiavel: false,
+    explica: "Errado! 3 × 7 = 21.",
+    dica: "Uma resposta escrita com segurança não quer dizer que está certa." },
+  { frase: "A IA sempre sabe as notícias de hoje, então tudo o que ela fala está atualizado.",
+    confiavel: false,
+    explica: "Falso! Muitas IAs aprendem com informações até uma certa data e podem estar desatualizadas.",
+    dica: "Para notícias e regras novas, procure sites oficiais e jornais." }
+];
+
+const $ = id => document.getElementById(id);
+let atual = 0, acertos = 0, respondido = false;
+
+function mostrar(tela){
+  ["telaInicio","telaJogo","telaFim"].forEach(t => $(t).classList.toggle("oculto", t !== tela));
+  window.scrollTo(0,0);
+}
+
+function carregarCaso(){
+  const c = CASOS[atual];
+  respondido = false;
+  $("numCaso").textContent = "CASO " + (atual+1) + " DE " + CASOS.length;
+  $("barra").style.width = (atual / CASOS.length * 100) + "%";
+  $("frase").textContent = c.frase;
+  const b = $("bolha"); b.style.animation = "none"; void b.offsetWidth; b.style.animation = "";
+  ["btnConfia","btnDesconfia"].forEach(id => { $(id).disabled = false; $(id).classList.remove("marcada"); });
+  $("veredito").classList.add("oculto");
+  $("btnProximo").classList.add("oculto");
+}
+
+function responder(confiou){
+  if (respondido) return;
+  respondido = true;
+  const c = CASOS[atual];
+  const acertou = confiou === c.confiavel;
+  if (acertou) acertos++;
+  $("acertos").textContent = acertos;
+  $(confiou ? "btnConfia" : "btnDesconfia").classList.add("marcada");
+  $("btnConfia").disabled = true; $("btnDesconfia").disabled = true;
+
+  const v = $("veredito");
+  v.className = "veredito " + (acertou ? "certo" : "errado");
+  $("vTitulo").textContent = acertou ? "🎯 Boa, detetive!" : "😬 Opa! A IA te enganou.";
+  $("vTexto").textContent = c.explica;
+  $("vDica").textContent = "💡 " + c.dica;
+  $("btnProximo").textContent = atual === CASOS.length - 1 ? "Ver meu resultado 🏆" : "Próximo caso →";
+  $("btnProximo").classList.remove("oculto");
+  $("barra").style.width = ((atual+1) / CASOS.length * 100) + "%";
+  setTimeout(() => $("btnProximo").scrollIntoView({behavior:"smooth", block:"end"}), 150);
+}
+
+function finalizar(){
+  const total = CASOS.length;
+  let medalha, titulo;
+  if (acertos === total){ medalha = "🏆"; titulo = "Detetive <span>Lendário</span>!"; }
+  else if (acertos >= 10){ medalha = "🥇"; titulo = "Detetive <span>de Elite</span>!"; }
+  else if (acertos >= 7){ medalha = "🥈"; titulo = "Detetive <span>Esperto</span>!"; }
+  else { medalha = "🔍"; titulo = "Detetive <span>em Treinamento</span>!"; }
+  $("medalha").textContent = medalha;
+  $("fimTitulo").innerHTML = titulo;
+  $("fimNota").textContent = "Você acertou " + acertos + " de " + total + " casos.";
+  mostrar("telaFim");
+}
+
+$("btnComecar").onclick = () => { atual = 0; acertos = 0; $("acertos").textContent = 0; carregarCaso(); mostrar("telaJogo"); };
+$("btnConfia").onclick = () => responder(true);
+$("btnDesconfia").onclick = () => responder(false);
+$("btnProximo").onclick = () => { if (atual < CASOS.length - 1){ atual++; carregarCaso(); window.scrollTo(0,0); } else finalizar(); };
+$("btnDeNovo").onclick = () => mostrar("telaInicio");
+</script>
+</body>
+</html>

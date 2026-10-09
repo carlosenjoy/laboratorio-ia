@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10132B">
+<title>Fábrica de Prompts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#10132B;--navy2:#1D2150;--navy3:#2A2F6B;--lime:#C8F25A;--coral:#FF6B5E;--sol:#FFB020;--texto:#F4F2EC;--suave:#B9BCD6}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--navy);color:var(--texto);font-size:19px;line-height:1.45;display:flex;justify-content:center}
+  button,input,textarea,select{font:inherit;color:inherit}
+  button{border:0;cursor:pointer}
+  :focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+  .app{width:100%;max-width:560px;padding:20px 18px 40px;display:flex;flex-direction:column;gap:18px}
+  .oculto{display:none!important}
+  h1{font-size:42px;line-height:1.05}
+  h2{font-size:30px;line-height:1.1}
+  h1 span,h2 span{color:var(--lime)}
+  .suave{color:var(--suave)}
+  .grande{font-size:80px;line-height:1}
+  .cartao{background:var(--navy2);border:2px solid var(--navy3);border-radius:22px;padding:18px;animation:entra .35s ease both}
+  .tag{display:inline-block;background:var(--lime);color:var(--navy);font-weight:700;font-size:14px;letter-spacing:.6px;padding:4px 12px;border-radius:999px}
+  .tag.coral{background:var(--coral)}
+  .tag.sol{background:var(--sol)}
+  .btn{width:100%;min-height:60px;border-radius:20px;font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s}
+  .btn:active{transform:scale(.97)}
+  .lima{background:var(--lime);color:var(--navy)}
+  .linha{background:transparent;border:2px solid var(--navy3)}
+  .menu{display:grid;gap:12px}
+  .item{display:flex;gap:14px;align-items:center;text-align:left;background:var(--navy2);border:2px solid var(--navy3);border-radius:22px;padding:16px}
+  .item em{font-style:normal;font-size:38px}
+  .item b{display:block;font-size:20px}
+  .item small{color:var(--suave);font-size:16px}
+  .ingred{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ingred div{background:var(--navy3);border-radius:18px;padding:14px}
+  .ingred em{font-style:normal;font-size:30px;display:block}
+  .ingred b{display:block;font-size:19px}
+  .ingred small{color:var(--suave);font-size:15px}
+  .voltar{background:none;color:var(--suave);font-weight:700;text-align:left;padding:4px 0}
+  /* missão 1 */
+  .opcao{width:100%;text-align:left;background:var(--navy3);border:2px solid transparent;border-radius:18px;padding:16px;font-size:18px;font-weight:500}
+  .opcao b{color:var(--lime);margin-right:6px}
+  .opcao.certa{border-color:var(--lime);background:#2F4A1A}
+  .opcao.errada{border-color:var(--coral);background:#4A1F1C}
+  .opcao[disabled]{cursor:default}
+  .feedback{border-radius:18px;padding:14px 16px;font-weight:500;color:var(--navy);animation:entra .3s ease both}
+  .feedback.ok{background:var(--lime)} .feedback.nao{background:var(--coral)}
+  /* montador */
+  label{display:block;font-weight:700;font-size:17px;margin:12px 0 6px}
+  label small{color:var(--suave);font-weight:500}
+  input,textarea,select{width:100%;background:var(--navy);border:2px solid var(--navy3);border-radius:14px;padding:12px 14px;font-size:18px}
+  textarea{min-height:80px;resize:vertical}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--lime)}
+  .medidor{height:16px;background:var(--navy);border-radius:10px;overflow:hidden}
+  .medidor i{display:block;height:100%;width:0;background:var(--coral);transition:width .3s,background .3s}
+  .nivel{font-weight:700;font-size:20px;margin-top:8px}
+  .prompt{background:var(--navy);border:2px dashed var(--lime);border-radius:16px;padding:14px;font-size:18px;white-space:pre-wrap;min-height:80px}
+  .sorteio{font-size:24px;font-weight:700;line-height:1.25}
+  .passo{display:flex;gap:12px;align-items:flex-start;margin-top:12px}
+  .passo b{flex:none;width:36px;height:36px;border-radius:50%;background:var(--lime);color:var(--navy);display:grid;place-items:center}
+  .aviso{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--lime);color:var(--navy);font-weight:700;padding:12px 20px;border-radius:999px;max-width:90vw;text-align:center}
+  @keyframes entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+
+<!-- INÍCIO -->
+<section id="tInicio">
+  <div class="grande">🏭</div>
+  <h1 style="margin-top:14px">Fábrica de <span>Prompts</span></h1>
+  <p class="suave" style="margin:12px 0 18px">A IA só faz um bom trabalho quando recebe um bom pedido. Esse pedido se chama <b style="color:var(--texto)">prompt</b>. Hoje você vira um especialista!</p>
+  <div class="menu">
+    <button class="item" data-ir="tAprender"><em>📚</em><span><b>1. Aprenda a receita</b><small>Os 4 ingredientes do bom prompt</small></span></button>
+    <button class="item" data-ir="tMissao"><em>🎯</em><span><b>2. Missão: qual é melhor?</b><small>6 rodadas de prompt contra prompt</small></span></button>
+    <button class="item" data-ir="tMontador"><em>🛠️</em><span><b>3. Monte seu prompt</b><small>Veja o medidor de qualidade subir</small></span></button>
+    <button class="item" data-ir="tDesafio"><em>🏆</em><span><b>4. Grande desafio em equipe</b><small>Sua equipe vira a IA da outra!</small></span></button>
+  </div>
+</section>
+
+<!-- APRENDER -->
+<section id="tAprender" class="oculto">
+  <button class="voltar" data-ir="tInicio">← Voltar</button>
+  <span class="tag">PARTE 1</span>
+  <h2 style="margin:10px 0">A receita do <span>bom prompt</span></h2>
+  <div class="cartao" style="margin-bottom:14px">
+    <p><b>Prompt ruim:</b> “Faz um cartaz.”</p>
+    <p class="suave" style="margin-top:6px">A IA não sabe para quem, sobre o quê, nem como. Vai sair qualquer coisa.</p>
+  </div>
+  <div class="ingred">
+    <div><em>👥</em><b>Para quem?</b><small>Quem vai ver ou usar</small></div>
+    <div><em>🎯</em><b>O que fazer?</b><small>A tarefa, bem clara</small></div>
+    <div><em>🎨</em><b>Como?</b><small>Estilo, tom, cores</small></div>
+    <div><em>🚧</em><b>Limites?</b><small>Tamanho, regras, formato</small></div>
+  </div>
+  <div class="cartao" style="margin-top:14px">
+    <p><b>Prompt bom:</b></p>
+    <p style="margin-top:6px">“Crie um <span style="color:var(--lime)">cartaz para alunos do 6º ano</span> <span style="color:var(--sol)">convidando para a feira de ciências</span>, com <span style="color:var(--coral)">linguagem divertida e cores fortes</span>, com <span style="color:#8FD3FF">no máximo 3 frases e a data da feira</span>.”</p>
+  </div>
+  <button class="btn lima" style="margin-top:16px" data-ir="tMissao">Bora para a missão 🎯</button>
+</section>
+
+<!-- MISSÃO -->
+<section id="tMissao" class="oculto">
+  <button class="voltar" data-ir="tInicio">← Voltar</button>
+  <span class="tag coral" id="mNum">RODADA 1 DE 6</span>
+  <h2 style="margin:10px 0" id="mPedido"></h2>
+  <p class="suave" style="margin-bottom:12px">Qual prompt vai dar o melhor resultado?</p>
+  <div style="display:grid;gap:10px" id="mOpcoes"></div>
+  <div id="mFeedback" style="margin-top:12px"></div>
+  <button class="btn lima oculto" style="margin-top:12px" id="mProx">Próxima rodada →</button>
+  <div id="mFim" class="cartao oculto" style="text-align:center">
+    <div class="grande" id="mMedalha">🏅</div>
+    <h2 style="margin:10px 0" id="mPlacar"></h2>
+    <button class="btn lima" data-ir="tMontador">Agora monte o seu 🛠️</button>
+  </div>
+</section>
+
+<!-- MONTADOR -->
+<section id="tMontador" class="oculto">
+  <button class="voltar" data-ir="tInicio">← Voltar</button>
+  <span class="tag sol">PARTE 3</span>
+  <h2 style="margin:10px 0">Monte seu <span>prompt</span></h2>
+  <div class="cartao">
+    <label>🎯 O que a IA deve fazer? <small>(ex.: crie uma história)</small></label>
+    <input id="fOque" placeholder="Crie / escreva / explique...">
+    <label>💡 Sobre qual assunto?</label>
+    <input id="fTema" placeholder="ex.: o futebol de várzea do bairro">
+    <label>👥 Para quem?</label>
+    <input id="fQuem" placeholder="ex.: crianças do 6º ano">
+    <label>🎨 Como? <small>(estilo, tom)</small></label>
+    <input id="fComo" placeholder="ex.: engraçado, com emojis">
+    <label>🚧 Limites? <small>(tamanho, formato)</small></label>
+    <input id="fLimite" placeholder="ex.: no máximo 10 linhas">
+  </div>
+  <div class="cartao">
+    <p style="font-weight:700;margin-bottom:8px">Medidor de qualidade</p>
+    <div class="medidor"><i id="barra"></i></div>
+    <p class="nivel" id="nivel">😴 Prompt dormindo...</p>
+    <p class="suave" id="faltam" style="font-size:16px;margin-top:4px"></p>
+  </div>
+  <div>
+    <p style="font-weight:700;margin-bottom:8px">Seu prompt pronto:</p>
+    <div class="prompt" id="saida">Preencha os campos acima...</div>
+  </div>
+  <button class="btn lima" id="btnCopiar">📋 Copiar prompt</button>
+</section>
+
+<!-- DESAFIO -->
+<section id="tDesafio" class="oculto">
+  <button class="voltar" data-ir="tInicio">← Voltar</button>
+  <span class="tag">GRANDE DESAFIO</span>
+  <h2 style="margin:10px 0">Sua equipe vira <span>a IA</span>! 🤖</h2>
+  <div class="cartao">
+    <p class="suave" style="font-size:16px;font-weight:700">MISSÃO DA SUA EQUIPE</p>
+    <p class="sorteio" id="dTema">Toque em sortear 👇</p>
+  </div>
+  <button class="btn lima" id="btnSortear">🎲 Sortear missão</button>
+  <div class="cartao">
+    <p style="font-weight:700">Como funciona:</p>
+    <div class="passo"><b>1</b><p>Usem a <b>Parte 3</b> para escrever o melhor prompt para a missão sorteada. Copiem numa folha.</p></div>
+    <div class="passo"><b>2</b><p>Entreguem a folha para <b>outra equipe</b>. Agora ela é a <b>“IA”</b>!</p></div>
+    <div class="passo"><b>3</b><p>A equipe-IA faz <b>exatamente</b> o que o prompt pede, no papel. Nem mais, nem menos!</p></div>
+    <div class="passo"><b>4</b><p>Devolvam e comparem: o resultado ficou como vocês imaginaram? O que faltou no prompt?</p></div>
+    <div class="passo"><b>5</b><p>Reescrevam o prompt melhorado e apresentem: <b>prompt 1 → resultado → prompt 2</b>.</p></div>
+  </div>
+  <div class="cartao">
+    <p style="font-weight:700">🏅 Ganha ponto quem:</p>
+    <p class="suave" style="margin-top:6px">✔ usou os 4 ingredientes<br>✔ o resultado ficou parecido com o esperado<br>✔ explicou o que melhorou na versão 2</p>
+  </div>
+</section>
+
+</main>
+<div class="aviso oculto" id="aviso"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+function ir(t){ document.querySelectorAll("main>section").forEach(s => s.classList.toggle("oculto", s.id !== t)); window.scrollTo(0,0); if(t==="tMissao") iniciarMissao(); }
+document.addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
+function avisar(m){ const a=$("aviso"); a.textContent=m; a.classList.remove("oculto"); clearTimeout(avisar.t); avisar.t=setTimeout(()=>a.classList.add("oculto"),2200); }
+
+/* ---------- MISSÃO ---------- */
+const RODADAS = [
+  { pedido:"Você quer uma redação sobre o meio ambiente.",
+    a:"Escreve sobre meio ambiente.",
+    b:"Escreva uma redação de 15 linhas para alunos do 8º ano sobre como reduzir o lixo na escola, com 3 exemplos práticos.",
+    certa:"b", porque:"A opção B diz para quem, o assunto exato, o tamanho e o formato." },
+  { pedido:"Você quer ajuda para estudar inglês.",
+    a:"Crie 10 perguntas de múltipla escolha sobre o verbo to be para iniciantes, com a resposta certa no final.",
+    b:"Me ajuda com inglês.",
+    certa:"a", porque:"A opção A diz o tema (verbo to be), o nível, a quantidade e o formato." },
+  { pedido:"Você quer um nome para o time da sala.",
+    a:"Me dá um nome.",
+    b:"Sugira 5 nomes curtos e engraçados para um time de futsal de uma turma de 9º ano de Guarulhos.",
+    certa:"b", porque:"Sem contexto, a IA não sabe que é um nome de time, nem o estilo que você quer." },
+  { pedido:"Você quer uma receita para fazer em casa.",
+    a:"Sugira uma receita de lanche fácil, sem forno, que um adolescente faça em 15 minutos, com ingredientes baratos.",
+    b:"Receita.",
+    certa:"a", porque:"A opção A tem limites claros: sem forno, 15 minutos e barato." },
+  { pedido:"Você quer um resumo de História.",
+    a:"Resuma a Proclamação da República.",
+    b:"Resuma a Proclamação da República em 5 tópicos curtos, com linguagem simples, para revisar para a prova do 8º ano.",
+    certa:"b", porque:"A opção A até funciona, mas a B diz tamanho, linguagem e objetivo." },
+  { pedido:"Você quer uma mensagem de aniversário para sua avó.",
+    a:"Escreva uma mensagem carinhosa de aniversário para minha avó de 70 anos, que adora plantas, com no máximo 4 linhas.",
+    b:"Escreva uma mensagem de aniversário.",
+    certa:"a", porque:"Detalhes pessoais (70 anos, plantas) deixam a mensagem única." }
+];
+let r=0, pts=0;
+function iniciarMissao(){ r=0; pts=0; $("mFim").classList.add("oculto"); mostrarRodada(); }
+function mostrarRodada(){
+  const R = RODADAS[r];
+  ["mNum","mPedido","mOpcoes"].forEach(id=>$(id).classList.remove("oculto"));
+  $("mNum").textContent = "RODADA " + (r+1) + " DE " + RODADAS.length;
+  $("mPedido").textContent = R.pedido;
+  $("mOpcoes").innerHTML = ["a","b"].map(k=>`<button class="opcao" data-k="${k}"><b>${k.toUpperCase()}</b>“${R[k]}”</button>`).join("");
+  $("mFeedback").innerHTML = ""; $("mProx").classList.add("oculto");
+}
+$("mOpcoes").addEventListener("click", e=>{
+  const b = e.target.closest(".opcao"); if(!b || b.disabled) return;
+  const R = RODADAS[r], ok = b.dataset.k === R.certa;
+  if (ok) pts++;
+  $("mOpcoes").querySelectorAll(".opcao").forEach(o=>{ o.disabled=true; if(o.dataset.k===R.certa) o.classList.add("certa"); else if(o===b) o.classList.add("errada"); });
+  $("mFeedback").innerHTML = `<div class="feedback ${ok?"ok":"nao"}"><b>${ok?"🎯 Acertou!":"😬 Quase!"}</b> ${R.porque}</div>`;
+  $("mProx").textContent = r === RODADAS.length-1 ? "Ver resultado 🏆" : "Próxima rodada →";
+  $("mProx").classList.remove("oculto");
+});
+$("mProx").onclick = ()=>{
+  if (r < RODADAS.length-1){ r++; mostrarRodada(); window.scrollTo(0,0); return; }
+  ["mNum","mPedido","mOpcoes","mProx"].forEach(id=>$(id).classList.add("oculto")); $("mFeedback").innerHTML="";
+  $("mMedalha").textContent = pts===6?"🏆":pts>=4?"🥇":"🔍";
+  $("mPlacar").textContent = "Você acertou " + pts + " de 6!";
+  $("mFim").classList.remove("oculto");
+};
+
+/* ---------- MONTADOR ---------- */
+const campos = ["fOque","fTema","fQuem","fComo","fLimite"];
+const nomes = {fOque:"o que fazer", fTema:"o assunto", fQuem:"para quem", fComo:"como", fLimite:"limites"};
+function atualizar(){
+  const v = Object.fromEntries(campos.map(c=>[c,$(c).value.trim()]));
+  const cheios = campos.filter(c=>v[c].length>=3);
+  const pct = Math.round(cheios.length/campos.length*100);
+  const barra=$("barra"); barra.style.width = pct+"%";
+  barra.style.background = pct<40?"var(--coral)":pct<100?"var(--sol)":"var(--lime)";
+  $("nivel").textContent = pct===0?"😴 Prompt dormindo...":pct<40?"😕 Muito vago":pct<80?"🙂 Melhorando!":pct<100?"😃 Quase perfeito!":"🤩 PROMPT DE MESTRE!";
+  const falta = campos.filter(c=>!cheios.includes(c)).map(c=>nomes[c]);
+  $("faltam").textContent = falta.length ? "Falta: " + falta.join(", ") : "Todos os ingredientes! 🎉";
+  if (!cheios.length){ $("saida").textContent="Preencha os campos acima..."; return; }
+  let t = (v.fOque || "Faça algo");
+  if (v.fTema) t += " sobre " + v.fTema;
+  if (v.fQuem) t += ", para " + v.fQuem;
+  if (v.fComo) t += ". Use um estilo " + v.fComo;
+  if (v.fLimite) t += ". Regras: " + v.fLimite;
+  $("saida").textContent = t.replace(/\s+/g," ").trim() + ".";
+}
+campos.forEach(c=>$(c).addEventListener("input", atualizar));
+$("btnCopiar").onclick = async ()=>{
+  const t = $("saida").textContent;
+  if (t.startsWith("Preencha")) return avisar("Preencha os campos primeiro ✍️");
+  try{ await navigator.clipboard.writeText(t); avisar("Copiado! 📋"); }catch(e){ avisar("Selecione o texto e copie à mão"); }
+};
+
+/* ---------- DESAFIO ---------- */
+const MISSOES = [
+  "📢 Um cartaz de campanha contra o bullying na escola",
+  "🍎 Um cardápio de lanche saudável para a cantina",
+  "🎮 Um jogo de tabuleiro para revisar inglês",
+  "🎙️ O roteiro de 1 minuto para o podcast da eletiva",
+  "♻️ Uma campanha de reciclagem para a sala",
+  "📱 A tela inicial de um app para ajudar a estudar",
+  "🏙️ Um folheto turístico sobre Guarulhos",
+  "🦸 Um super-herói que resolve um problema do bairro",
+  "🎵 Uma paródia curta para decorar uma matéria",
+  "🧾 As regras de convivência da sala em formato divertido"
+];
+let ultima=-1;
+$("btnSortear").onclick = ()=>{
+  let i; do{ i=Math.floor(Math.random()*MISSOES.length); }while(i===ultima && MISSOES.length>1);
+  ultima=i; const d=$("dTema"); d.style.animation="none"; void d.offsetWidth; d.style.animation="entra .35s ease both";
+  d.textContent = MISSOES[i];
+};
+</script>
+</body>
+</html>
